@@ -96,7 +96,10 @@ export default function AdminPage() {
     setReadme(null);
     setReadmeLoading(true);
     try {
-      const r = await fetch("/api/admin/readme?repo=" + encodeURIComponent(repo.full_name), {
+      const r = await fetch("/api/admin/readme", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ repo: repo.full_name, password: adminPassword }),
         cache: "no-store",
       });
       const d = await r.json();

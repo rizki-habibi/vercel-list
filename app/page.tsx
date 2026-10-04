@@ -377,6 +377,35 @@ function ProjectCard({ p }: { p: Project }) {
         </div>
       </div>
 
+      {live ? (
+        <div className="sitePreview">
+          <div className="previewBar">
+            <span className="previewDot" />
+            <span className="previewDot" />
+            <span className="previewDot" />
+            <span className="previewUrl">{live.replace(/^https?:\/\//, "").replace(/\/$/, "")}</span>
+            <a href={live} target="_blank" rel="noreferrer" aria-label="Buka website">
+              <ExternalLink size={14} />
+            </a>
+          </div>
+          <iframe
+            src={live}
+            title={`Preview website ${p.name}`}
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+          />
+          <div className="previewFallback">
+            <span>Preview website</span>
+            <a href={live} target="_blank" rel="noreferrer">Buka website</a>
+          </div>
+        </div>
+      ) : (
+        <div className="noPreview">
+          <Globe size={25} />
+          <span>Belum ada alamat website pada repository ini</span>
+        </div>
+      )}
+
       <p>{p.description || "Tidak ada deskripsi repository."}</p>
 
       <div className="meta">

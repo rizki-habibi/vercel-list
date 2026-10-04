@@ -1,0 +1,60 @@
+name: Quality Inspector
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: quality-inspector-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  inspect:
+    name: Inspect, lint, typecheck & build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate GitHub Actions YAML
+        uses: raven-actions/actionlint@v2
+      - name: Check TypeScript
+        run: npm run typecheck
+      - name: ESLint
+        run: npm run lint
+      - name: Next.js production build
+        run: npm run build
+      - name: Inspect deployment configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f vercel.json ]; then
+            node -e "JSON.parse(require('fs').readFileSync('vercel.json','utf8')); console.log('vercel.json: valid JSON')"
+          else
+            echo "vercel.json: not present (Zero Config mode)"
+          fi
+          if [ -f package-lock.json ]; then
+            echo "package-lock.json: present"
+          else
+            echo "::error::package-lock.json is missing; npm ci requires a lockfile"
+            exit 1
+          fi
+      - name: Write inspection summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Quality Inspector"
+            echo ""
+            echo "- Commit: ${GITHUB_SHA}"
+            echo "- Branch/event: ${GITHUB_REF_NAME} / ${GITHUB_EVENT_NAME}"
+            echo "- Checks: YAML, dependency install, TypeScript, ESLint, Next.js build"
+          } >> "$GITHUB_STEP_SUMMARY"

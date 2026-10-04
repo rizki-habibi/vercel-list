@@ -10,7 +10,7 @@ export default function AdminPage(){
  const [repos,setRepos]=useState<Repo[]>([]); const [query,setQuery]=useState(""); const [loading,setLoading]=useState(false); const [error,setError]=useState("");
  async function login(){
   setLoading(true);setError("");
-  try{const r=await fetch("/api/admin/projects",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Login gagal");setRepos(d.repos||[]);setAuthenticated(true);setPassword("");}
+  try{const r=await fetch("/api/admin/projects",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Login gagal");setRepos(d.repos||[]);setAdminPassword(password);setAuthenticated(true);setPassword("");}
   catch(e){setError(e instanceof Error?e.message:"Login gagal")}finally{setLoading(false)}
  }
  const filtered=useMemo(()=>{const q=query.trim().toLowerCase();return !q?repos:repos.filter(r=>[r.name,r.full_name,r.description||"",r.visibility].join(" ").toLowerCase().includes(q))},[repos,query]);

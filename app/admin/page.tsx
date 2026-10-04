@@ -130,8 +130,8 @@ export default function AdminPage() {
           <h1>Panel Admin</h1>
           <p>Masuk untuk melihat repository public dan private yang dapat diakses akun GitHub.</p>
           <form onSubmit={(e) => { e.preventDefault(); void login(); }}>
-            <label>Password admin</label>
-            <input autoFocus type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Masukkan password" />
+            <label htmlFor="admin-password">Password admin</label>
+            <input id="admin-password" name="password" autoComplete="current-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Masukkan password" />
             {error && <div className="adminError">{error}</div>}
             <button className="primary adminSubmit" disabled={loading || !password} type="submit">
               <ShieldCheck size={17} /> {loading ? "Memeriksa..." : "Masuk ke Admin"}

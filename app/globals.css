@@ -56,3 +56,8 @@
 .languageBadge{color:#8ca0bb!important}
 @media(max-width:900px){.auditStats{grid-template-columns:repeat(2,1fr)}.auditRow{grid-template-columns:34px 1fr}.auditReasons{grid-column:2;justify-content:flex-start}}
 @media(max-width:650px){.auditHead{display:block}.auditBadge{display:inline-flex;margin-top:15px}.auditStats{grid-template-columns:1fr 1fr}.filterPanel{display:grid;grid-template-columns:1fr 1fr}.filterTitle{grid-column:1/-1;padding-bottom:0}.filterSelect{min-width:0}.clearFilter{width:100%}.resultInfo{display:block;line-height:2}.resultInfo span{display:block}.auditRow{grid-template-columns:30px 1fr}.auditReasons{grid-column:1/-1}}
+
+.vercelMonitor{max-width:1600px;margin:0 auto;padding:28px 8%;display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid #171c25;background:#0a0d13}
+.vercelMonitor h2{margin:0 0 7px;font-size:21px;letter-spacing:-.6px}.vercelMonitor p{margin:0;color:#747e8c;font-size:11px;line-height:1.6;max-width:800px}
+.vercelHealth{min-width:210px;border:1px solid #29323f;background:#0e141c;border-radius:11px;padding:13px 15px}.vercelHealth span{display:inline-block;width:8px;height:8px;border-radius:50%;background:#7ee4a4;margin-right:8px;box-shadow:0 0 12px #7ee4a4}.vercelHealth b{font-size:11px}.vercelHealth small{display:block;color:#687483;font-size:9px;margin-top:5px}.vercelHealth.danger{border-color:#54313a}.vercelHealth.danger span{background:#e58d97;box-shadow:0 0 12px #e58d97}
+@media(max-width:650px){.vercelMonitor{display:block;padding:25px 5%}.vercelHealth{margin-top:16px;min-width:0}}

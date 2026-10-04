@@ -11,20 +11,24 @@ type Repo = {
   stargazers_count: number;
   fork: boolean;
   archived: boolean;
+  owner?: { login: string };
 };
 
 export const dynamic = "force-dynamic";
 
 async function gh(path: string) {
   const token = process.env.GITHUB_TOKEN;
-  if (!token) throw new Error("GITHUB_TOKEN belum diatur.");
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+
+  if (token?.trim()) {
+    headers.Authorization = "Bearer " + token.trim();
+  }
 
   const r = await fetch("https://api.github.com" + path, {
-    headers: {
-      Authorization: "Bearer " + token,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-    },
+    headers,
     cache: "no-store",
   });
 
@@ -37,12 +41,25 @@ async function gh(path: string) {
 
 export async function GET() {
   try {
-    const me = await gh("/user");
-    const repos: Repo[] = await gh(
-      "/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator,organization_member",
-    );
+    let me: { login?: string; avatar_url?: string } = {
+      login: "rizki-habibi",
+    };
 
-    const filtered = repos.filter((r) => !r.fork);
+    let repos: Repo[];
+
+    if (process.env.GITHUB_TOKEN?.trim()) {
+      me = await gh("/user");
+      repos = await gh(
+        "/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator,organization_member",
+      );
+    } else {
+      // Fallback publik: aplikasi tetap berjalan tanpa token GitHub.
+      repos = await gh(
+        "/users/rizki-habibi/repos?per_page=100&sort=updated&type=owner",
+      );
+    }
+
+    const filtered = repos.filter((r) => !r.fork && !r.archived);
 
     const deploys = filtered
       .filter((r) => Boolean(r.homepage))
@@ -62,11 +79,14 @@ export async function GET() {
       deploys,
       notifications: [],
       syncedAt: new Date().toISOString(),
-      note: "Mode sederhana: hanya membutuhkan GITHUB_TOKEN. Website diambil dari homepage repository GitHub.",
+      authenticated: Boolean(process.env.GITHUB_TOKEN?.trim()),
+      note: process.env.GITHUB_TOKEN?.trim()
+        ? "Terhubung ke GitHub menggunakan token."
+        : "Mode publik aktif: GITHUB_TOKEN belum diisi, sehingga repository publik tetap ditampilkan.",
     });
   } catch (e) {
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Gagal mengambil data" },
+      { error: e instanceof Error ? e.message : "Gagal mengambil data GitHub" },
       { status: 500 },
     );
   }

@@ -55,7 +55,6 @@ async function getAllRepos() {
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const password = typeof body.password === "string" ? body.password : "";
     const cookieStore = await cookies();
     const session = cookieStore.get("admin_session")?.value;
     const validPassword = Boolean(process.env.ADMIN_PASSWORD && password === process.env.ADMIN_PASSWORD);

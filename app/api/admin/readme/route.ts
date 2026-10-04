@@ -2,8 +2,16 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   try {
+    const body = await request.json().catch(() => ({}));
+    const password = typeof body.password === "string" ? body.password : "";
+    const repo = typeof body.repo === "string" ? body.repo.trim() : "";
+
+    if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
+      return NextResponse.json({ error: "Akses admin ditolak." }, { status: 401 });
+    }
+
     const token = process.env.GITHUB_TOKEN?.trim();
     if (!token) {
       return NextResponse.json(
@@ -12,8 +20,6 @@ export async function GET(request: Request) {
       );
     }
 
-    const url = new URL(request.url);
-    const repo = url.searchParams.get("repo")?.trim() || "";
     if (!/^[^/]+\/[^/]+$/.test(repo)) {
       return NextResponse.json({ error: "Repository tidak valid." }, { status: 400 });
     }

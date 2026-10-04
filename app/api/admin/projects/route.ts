@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 type Repo = {
   id: number; name: string; full_name: string; description: string | null;
@@ -55,10 +56,14 @@ export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
     const password = typeof body.password === "string" ? body.password : "";
+    const cookieStore = await cookies();
+    const session = cookieStore.get("admin_session")?.value;
+    const validPassword = Boolean(process.env.ADMIN_PASSWORD && password === process.env.ADMIN_PASSWORD);
+    const validSession = Boolean(process.env.ADMIN_SESSION_SECRET && session === process.env.ADMIN_SESSION_SECRET);
 
-    if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
+    if (!validPassword && !validSession) {
       return NextResponse.json(
-        { error: "Password admin salah atau belum dikonfigurasi." },
+        { error: "Password admin salah atau sesi admin tidak valid." },
         { status: 401 },
       );
     }
@@ -76,13 +81,17 @@ export async function POST(request: Request) {
         website: r.homepage || null,
       }));
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       authenticated: true,
       user: me,
       repos: projects,
       totalFetched: repos.length,
       syncedAt: new Date().toISOString(),
     });
+    if (validPassword && process.env.ADMIN_SESSION_SECRET) {
+      response.cookies.set("admin_session", process.env.ADMIN_SESSION_SECRET, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict", path: "/", maxAge: 60 * 60 * 8 });
+    }
+    return response;
   } catch (error) {
     return NextResponse.json(
       {

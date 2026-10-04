@@ -13,6 +13,8 @@ type Repo = {
   archived: boolean;
   private: boolean;
   owner?: { login: string };
+  size: number;
+  language: string | null;
 };
 
 export const dynamic = "force-dynamic";
@@ -65,7 +67,28 @@ export async function GET() {
       (r) => !r.private && !r.fork && !r.archived,
     );
 
-    const deploys = filtered
+    const detectProvider = (homepage?: string | null) => {
+    const value = (homepage || "").toLowerCase();
+    if (!value) return null;
+    if (value.includes("vercel.app") || value.includes("vercel.com")) return "Vercel";
+    if (value.includes("railway.app") || value.includes("railway")) return "Railway";
+    if (value.includes("netlify.app") || value.includes("netlify.com")) return "Netlify";
+    if (value.includes("onrender.com") || value.includes("render.com")) return "Render";
+    if (value.includes("fly.dev") || value.includes("fly.io")) return "Fly.io";
+    if (value.includes("pages.dev") || value.includes("workers.dev")) return "Cloudflare";
+    if (value.includes("github.io")) return "GitHub Pages";
+    if (value.includes("web.app") || value.includes("firebaseapp.com")) return "Firebase";
+    if (value.includes("surge.sh")) return "Surge";
+    return "Custom domain";
+  };
+
+  const enriched = filtered.map((repo) => ({
+    ...repo,
+    deploymentProvider: detectProvider(repo.homepage),
+    contentState: repo.size === 0 ? "EMPTY" : repo.size < 100 ? "MINIMAL" : "FILLED",
+  }));
+
+  const deploys = enriched
       .filter((r) => Boolean(r.homepage))
       .map((r) => ({
         uid: "github-homepage-" + r.id,
@@ -79,7 +102,7 @@ export async function GET() {
 
     return NextResponse.json({
       user: me,
-      repos: filtered,
+      repos: enriched,
       deploys,
       notifications: [],
       syncedAt: new Date().toISOString(),

@@ -41,7 +41,6 @@ type ReadmeData = {
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
-  const [adminPassword, setAdminPassword] = useState("");
   const [repos, setRepos] = useState<Repo[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -62,7 +61,6 @@ export default function AdminPage() {
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Login gagal");
       setRepos(d.repos || []);
-      setAdminPassword(password);
       setAuthenticated(true);
       setPassword("");
     } catch (e) {
@@ -79,7 +77,7 @@ export default function AdminPage() {
       const r = await fetch("/api/admin/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: adminPassword }),
+        body: JSON.stringify({}),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Gagal sinkronisasi");
@@ -99,7 +97,7 @@ export default function AdminPage() {
       const r = await fetch("/api/admin/readme", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repo: repo.full_name, password: adminPassword }),
+        body: JSON.stringify({ repo: repo.full_name }),
         cache: "no-store",
       });
       const d = await r.json();
@@ -155,7 +153,7 @@ export default function AdminPage() {
           <div className="logo"><ShieldCheck size={21} /></div>
           <div><b>Vercel List Admin</b><span>Semua repository GitHub</span></div>
         </div>
-        <button className="secondary" onClick={() => { setAuthenticated(false); setRepos([]); }} type="button">
+        <button className="secondary" onClick={async () => { await fetch("/api/admin/logout", { method: "POST" }); setAuthenticated(false); setRepos([]); }} type="button">
           <LogOut size={16} /> Keluar
         </button>
       </header>

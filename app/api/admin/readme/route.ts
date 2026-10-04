@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const password = typeof body.password === "string" ? body.password : "";
     const repo = typeof body.repo === "string" ? body.repo.trim() : "";
-
-    if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
-      return NextResponse.json({ error: "Akses admin ditolak." }, { status: 401 });
+    const session = (await cookies()).get("admin_session")?.value;
+    if (!process.env.ADMIN_SESSION_SECRET || session !== process.env.ADMIN_SESSION_SECRET) {
+      return NextResponse.json({ error: "Sesi admin tidak valid atau sudah berakhir." }, { status: 401 });
     }
 
     const token = process.env.GITHUB_TOKEN?.trim();

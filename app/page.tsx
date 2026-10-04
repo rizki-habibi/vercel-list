@@ -129,6 +129,8 @@ export default function Home() {
           <a href="#projects">Project</a>
           <a href="#activity">Aktivitas</a>
           <a href="#about">Tentang</a>
+          <a href="/admin" className="adminNav">Admin</a>
+          <a href="#projects" className="userNav">Pengguna</a>
         </nav>
 
         <div className="actions">

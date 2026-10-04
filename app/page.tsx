@@ -88,6 +88,7 @@ export default function Home() {
   const [contentFilter, setContentFilter] = useState<ContentFilter>("Semua");
   const [deployFilter, setDeployFilter] = useState<DeployFilter>("Semua");
   const [websiteOnly, setWebsiteOnly] = useState<"Semua" | "Ada website" | "Tanpa website">("Semua");
+  const [vercelState, setVercelState] = useState<{configured:boolean;projects:number;deployments:number;failed:number;error?:string}>({configured:false,projects:0,deployments:0,failed:0});
 
   const load = async () => {
     setLoading(true);
@@ -98,6 +99,12 @@ export default function Home() {
       setRepos(data.repos || []);
       setDeploys(data.deploys || []);
       setNotice(data.notifications || []);
+      try {
+        const vr = await fetch("/api/vercel", { cache: "no-store" });
+        const vd = await vr.json();
+        setVercelState({ configured: Boolean(vd.configured), projects: vd.projects?.length || 0, deployments: vd.deployments?.length || 0, failed: vd.failed?.length || 0, error: vd.error });
+        if (vd.error) setNotice((current) => [...current, "Vercel: " + vd.error]);
+      } catch { setVercelState((current) => ({ ...current, error: "Endpoint Vercel tidak dapat dihubungi." })); }
     } catch (error) {
       setNotice([error instanceof Error ? error.message : "Gagal memuat data"]);
     } finally {
@@ -180,6 +187,8 @@ export default function Home() {
         <Stat icon={<Globe />} label="Ter-deploy" value={stats.deployed} />
         <Stat icon={<Star />} label="Total rating GitHub" value={stats.stars} />
         <Stat icon={<Sparkles />} label="Project terisi" value={stats.filled} />
+        <Stat icon={<Server />} label="Vercel project" value={vercelState.projects} />
+        <Stat icon={<AlertCircle />} label="Deployment bermasalah" value={vercelState.failed} />
       </section>
 
       <section className="smartAudit" id="smart-audit">

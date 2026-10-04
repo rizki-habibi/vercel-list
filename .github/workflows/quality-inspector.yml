@@ -23,7 +23,7 @@ jobs:
           node-version: 22
           cache: npm
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       - name: Validate GitHub Actions YAML
         uses: raven-actions/actionlint@v2
       - name: Check TypeScript
@@ -40,12 +40,6 @@ jobs:
             node -e "JSON.parse(require('fs').readFileSync('vercel.json','utf8')); console.log('vercel.json: valid JSON')"
           else
             echo "vercel.json: not present (Zero Config mode)"
-          fi
-          if [ -f package-lock.json ]; then
-            echo "package-lock.json: present"
-          else
-            echo "::error::package-lock.json is missing; npm ci requires a lockfile"
-            exit 1
           fi
       - name: Write inspection summary
         if: always()

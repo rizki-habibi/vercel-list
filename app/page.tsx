@@ -28,6 +28,7 @@ type Repo = {
   stargazers_count: number;
   fork: boolean;
   archived: boolean;
+  homepage?: string | null;
 };
 
 type Deploy = {

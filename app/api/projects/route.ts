@@ -11,6 +11,7 @@ type Repo = {
   stargazers_count: number;
   fork: boolean;
   archived: boolean;
+  private: boolean;
   owner?: { login: string };
 };
 
@@ -59,7 +60,10 @@ export async function GET() {
       );
     }
 
-    const filtered = repos.filter((r) => !r.fork && !r.archived);
+    // Endpoint publik tidak boleh pernah mengirim repository private ke browser.
+    const filtered = repos.filter(
+      (r) => !r.private && !r.fork && !r.archived,
+    );
 
     const deploys = filtered
       .filter((r) => Boolean(r.homepage))
@@ -81,7 +85,7 @@ export async function GET() {
       syncedAt: new Date().toISOString(),
       authenticated: Boolean(process.env.GITHUB_TOKEN?.trim()),
       note: process.env.GITHUB_TOKEN?.trim()
-        ? "Terhubung ke GitHub menggunakan token."
+        ? "Terhubung ke GitHub. Halaman publik hanya menampilkan repository public."
         : "Mode publik aktif: GITHUB_TOKEN belum diisi, sehingga repository publik tetap ditampilkan.",
     });
   } catch (e) {
